@@ -20,6 +20,7 @@
         }
         newSearch += 'username=' + (prompt('What is your name?') || 'anonymous');
         window.location.search = newSearch;
+
       }
 
     </script>
@@ -28,10 +29,9 @@
       $(document).on('ready', function() { 
         app.init();
 
-        // $('#main').on('click', 'li', function(event) {
-        //   app.handleUsernameClick();
-        // });
-
+        window.myFunction = function() {
+          document.getElementById('roomSelect').classList.toggle('show');
+        };
       });
 
     </script>
@@ -39,11 +39,17 @@
   <body>
     <div id="main">
       <h1>chatterbox</h1>
-        <form action='app.handleSubmit'>
-          <input type='text' name='message'>
+        <div class="dropdown">
+        <button onclick="window.myFunction()" class="dropbtn">Rooms</button>
+          <div id="roomSelect" class="dropdown-content">
+          </div>
+        </div>
+        <form id='send' class='messageInput' method='post' >
+          <input id='message' type='text' name='message'>
           <br><br>
-          <input type="submit" value="Submit">
+          <input class='submit' type="submit" value="Submit">
         </form>
+        <button class='re-render'>Refresh</button>
     </div>
     <div id="chats"></div>
   </body>
