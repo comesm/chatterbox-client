@@ -2,6 +2,7 @@ var app = {
   init: function() {
     window.rooms = {};
     window.currentRoom = 'lobby';
+    window.friends = [];
     this.fetch();
     $('#chats').on('click', '.username', function(event) {
       app.handleUsernameClick(event);
@@ -23,7 +24,12 @@ var app = {
       window.currentRoom = event.target.text;
       app.clearMessages();
       app.fetch();
-    })
+    });
+
+    $('#chats').on('click', '.username', function(event) {
+      app.handleUsernameClick(event);
+      console.log('31');
+    });
     
   },
   server: 'https://api.parse.com/1/classes/messages',
@@ -85,7 +91,10 @@ var app = {
     $('#chats').append($('<li class=message> <span class=username>' + data.username + ' ' + '</span>' + text + '</li>'));
   },
   handleUsernameClick: function(event) {
-    console.log('Clicked username');
+    window.friends.push(event.target.text);
+    //loop thru messages from friends
+    //make messages boldface font
+
   },
   handleSubmit: function(message) {
     this.clearMessages();
