@@ -108,7 +108,6 @@ describe('chatterbox', function() {
 
         $('#main').find('.username').trigger('click');
         expect(app.handleUsernameClick.called).to.be.true;
-
         app.handleUsernameClick.restore();
       });
 

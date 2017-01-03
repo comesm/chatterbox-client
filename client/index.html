@@ -7,6 +7,10 @@
 
     <!-- dependencies -->
     <script src="bower_components/jquery/dist/jquery.js"></script>
+    <script src="bower_components/underscore/underscore-min.js"></script>
+    <script src="bower_components/backbone/backbone.js"></script>
+    <script src="env/config.js"></script>
+    <script src="scripts/app.js"></script>
     <script>
       // YOU DO NOT NEED TO EDIT THIS CODE
       if (!/(&|\?)username=/.test(window.location.search)) {
@@ -17,15 +21,29 @@
         newSearch += 'username=' + (prompt('What is your name?') || 'anonymous');
         window.location.search = newSearch;
       }
+
     </script>
     <!-- your scripts -->
-    <script src="env/config.js"></script>
-    <script src="scripts/app.js"></script>
+    <script>
+      $(document).on('ready', function() { 
+        app.init();
+
+        // $('#main').on('click', 'li', function(event) {
+        //   app.handleUsernameClick();
+        // });
+
+      });
+
+    </script>
   </head>
   <body>
     <div id="main">
       <h1>chatterbox</h1>
-      <!-- Your HTML goes here! -->
+        <form action='app.handleSubmit'>
+          <input type='text' name='message'>
+          <br><br>
+          <input type="submit" value="Submit">
+        </form>
     </div>
     <div id="chats"></div>
   </body>
