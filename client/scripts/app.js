@@ -2,7 +2,7 @@ var app = {
   init: function() {
     window.rooms = {};
     window.currentRoom = 'lobby';
-    window.friends = [];
+    window.friends = {};
     this.fetch();
     $('#chats').on('click', '.username', function(event) {
       app.handleUsernameClick(event);
@@ -12,7 +12,6 @@ var app = {
       event.preventDefault();
       // console.log($('#message'));
       app.handleSubmit($('input:first').val());
-      console.log($('input:first').val());
     });
 
     $('.re-render').on('click', function(event) {
@@ -26,9 +25,16 @@ var app = {
       app.fetch();
     });
 
+    $('.new-room').on('click', function(event) {
+      var newroom = _.escape(prompt('Enter new room name.'));
+      window.rooms[newroom] = newroom;
+      app.renderRoom(newroom);
+    });
+
     $('#chats').on('click', '.username', function(event) {
       app.handleUsernameClick(event);
-      console.log('31');
+      app.clearMessages();
+      app.fetch();
     });
     
   },
@@ -40,9 +46,7 @@ var app = {
       data: JSON.stringify(message),
       contentType: 'application/json',
       success: function (data) {
-        //app.clearMessages();
         app.fetch();
-        //app.renderAll(data);
         console.log('chatterbox: Message sent');
       },
       error: function (data) {
@@ -57,7 +61,6 @@ var app = {
       data: {order: '-createdAt'},
       contentType: 'application/json',
       success: function (data) {
-    
         data.results.forEach(function(message) {
           if (!window.rooms[message.roomname] && !!message.roomname) {
             window.rooms[message.roomname] = message.roomname;
@@ -67,7 +70,6 @@ var app = {
             app.renderMessage(message);
           }
         });
-        
         console.log('chatterbox: Message is received');
       },
       error: function (data) {
@@ -79,22 +81,21 @@ var app = {
     $('#chats').children().remove();
   },
   renderRoom: function(roomName) {
-
-      $('#roomSelect').append('<div><a href ="#">' + roomName + '</a></div>');
-    // }
+    $('#roomSelect').append('<div><a href ="#">' + roomName + '</a></div>');
   },
  
   renderMessage: function(data) {
     // first check if each roomname matches any in the options array
     //
     var text = _.escape(data.text);
-    $('#chats').append($('<li class=message> <span class=username>' + data.username + ' ' + '</span>' + text + '</li>'));
+    if (window.friends.hasOwnProperty(data.username)) {
+      $('#chats').append($('<li class=message style="font-weight: bold"> <span class=username>' + data.username + '</span>' + text + '</li>'));   
+    } else {
+      $('#chats').append($('<li class=message> <span class=username>' + data.username + '</span>' + text + '</li>'));
+    }
   },
   handleUsernameClick: function(event) {
-    window.friends.push(event.target.text);
-    //loop thru messages from friends
-    //make messages boldface font
-
+    window.friends[event.target.textContent] = event.target.textContent;
   },
   handleSubmit: function(message) {
     this.clearMessages();
