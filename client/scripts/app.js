@@ -1,16 +1,19 @@
 var app = {
+  rooms: {},
+  currentRoom: 'lobby',
+  friends: {},
   init: function() {
-    window.rooms = {};
-    window.currentRoom = 'lobby';
-    window.friends = {};
-    this.fetch();
+    this.fetch({order: '-createdAt'});
+    
+    setInterval(app.fetch.bind(this, {order: '-createdAt', 
+                where: {'roomname': app.currentRoom}}), 10000);
+    
     $('#chats').on('click', '.username', function(event) {
       app.handleUsernameClick(event);
     });
 
     $('#send').on('submit', function(event) {
       event.preventDefault();
-      // console.log($('#message'));
       app.handleSubmit($('input:first').val());
     });
 
@@ -20,21 +23,22 @@ var app = {
     });
 
     $('#roomSelect').on('click', function(event) {
-      window.currentRoom = event.target.text;
+      app.currentRoom = event.target.text;
       app.clearMessages();
-      app.fetch();
+      app.fetch({order: '-createdAt', 
+                where: {'roomname': app.currentRoom}});
     });
 
     $('.new-room').on('click', function(event) {
       var newroom = _.escape(prompt('Enter new room name.'));
-      window.rooms[newroom] = newroom;
+      app.rooms[newroom] = newroom;
       app.renderRoom(newroom);
     });
 
     $('#chats').on('click', '.username', function(event) {
       app.handleUsernameClick(event);
       app.clearMessages();
-      app.fetch();
+      app.fetch({order: '-createdAt'});
     });
     
   },
@@ -46,7 +50,7 @@ var app = {
       data: JSON.stringify(message),
       contentType: 'application/json',
       success: function (data) {
-        app.fetch();
+        app.fetch({order: '-createdAt'});
         console.log('chatterbox: Message sent');
       },
       error: function (data) {
@@ -54,19 +58,26 @@ var app = {
       }
     });
   },
-  fetch: function() {
+  fetch: function(optionsObj) {
+
+    //$.ajax(optionsObj)
     $.ajax({
       url: this.server,
       type: 'GET',
-      data: {order: '-createdAt'},
+      data: optionsObj,
+      // data: {
+      //   order: '-createdAt',
+      //   where: {'roomname': app.currentRoom}        
+      // },
       contentType: 'application/json',
       success: function (data) {
+        app.clearMessages();
         data.results.forEach(function(message) {
-          if (!window.rooms[message.roomname] && !!message.roomname) {
-            window.rooms[message.roomname] = message.roomname;
+          if (!app.rooms[message.roomname] && !!message.roomname) {
+            app.rooms[message.roomname] = message.roomname;
             app.renderRoom(message.roomname);
           }
-          if (message.roomname === window.currentRoom) {
+          if (message.roomname === app.currentRoom) {
             app.renderMessage(message);
           }
         });
@@ -78,31 +89,33 @@ var app = {
     });
   },
   clearMessages: function() {
-    $('#chats').children().remove();
+    // $('#chats').children().remove();
   },
   renderRoom: function(roomName) {
     $('#roomSelect').append('<div><a href ="#">' + roomName + '</a></div>');
   },
  
   renderMessage: function(data) {
-    // first check if each roomname matches any in the options array
-    //
-    var text = _.escape(data.text);
-    if (window.friends.hasOwnProperty(data.username)) {
-      $('#chats').append($('<li class=message style="font-weight: bold"> <span class=username>' + data.username + '</span>' + text + '</li>'));   
-    } else {
-      $('#chats').append($('<li class=message> <span class=username>' + data.username + '</span>' + text + '</li>'));
+    try { 
+      var text = encoda.attribute.escape(data.text);
+      if (app.friends.hasOwnProperty(data.username)) {
+        $('.msgTable').append($('<tr class=message style="font-weight: bold"> <td class=username>' + data.username + '</td><td class=msgText>' + text + '</td></tr>'));   
+      } else {
+        $('.msgTable').append($('<tr class=message> <td class=username>' + data.username + '</td><td class=msgText>' + text + '</td></tr>'));
+      }
+    } catch (exception) {
+      console.log(exception);
     }
   },
   handleUsernameClick: function(event) {
-    window.friends[event.target.textContent] = event.target.textContent;
+    app.friends[event.target.textContent] = event.target.textContent;
   },
   handleSubmit: function(message) {
     this.clearMessages();
     this.send({
       username: window.location.search.split('=')[1],
       text: message,
-      roomname: window.currentRoom
+      roomname: app.currentRoom
     });
   }
 };
